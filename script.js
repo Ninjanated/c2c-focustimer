@@ -36,8 +36,8 @@ document.addEventListener('click', () => {
     }
 }, { once: true });
 
-const FOCUS_TIME = 25 * 60; // 25 minutes in seconds
-const REST_TIME = 5 * 60;  // 5 minutes in seconds
+let FOCUS_TIME = 25 * 60; // 25 minutes in seconds
+let REST_TIME = 5 * 60;  // 5 minutes in seconds
 
 let timeLeft = FOCUS_TIME;
 let timerId = null;
@@ -63,13 +63,23 @@ function openSettings() {
         pauseTimer();
         pausedIndicator.classList.add('show');
     }
+    // Set current values in settings
+    workMinutesInput.value = Math.floor(FOCUS_TIME / 60);
+    workSecondsInput.value = FOCUS_TIME % 60;
+    restMinutesInput.value = Math.floor(REST_TIME / 60);
+    restSecondsInput.value = REST_TIME % 60;
+    modeIndicator.textContent = isFocusMode ? 'Focus Time' : 'Rest Time';
     settingsPopup.classList.add('show');
 }
 
 function closeSettings() {
+    // Update durations from settings
+    FOCUS_TIME = parseInt(workMinutesInput.value) * 60 + parseInt(workSecondsInput.value);
+    REST_TIME = parseInt(restMinutesInput.value) * 60 + parseInt(restSecondsInput.value);
+    
     settingsPopup.classList.remove('show');
     if (!isRunning) {
-        timeLeft = getTimeFromInputs();
+        timeLeft = isFocusMode ? FOCUS_TIME : REST_TIME;
         updateDisplay();
     } else {
         startTimer();
@@ -292,3 +302,17 @@ addTenBtn.addEventListener('click', () => addTime(10));
 addThirtyBtn.addEventListener('click', () => addTime(30));
 removeTenBtn.addEventListener('click', () => removeTime(10));
 removeThirtyBtn.addEventListener('click', () => removeTime(30));
+
+// Get settings elements
+const workMinutesInput = document.getElementById('workMinutesInput');
+const workSecondsInput = document.getElementById('workSecondsInput');
+const restMinutesInput = document.getElementById('restMinutesInput');
+const restSecondsInput = document.getElementById('restSecondsInput');
+
+// Input validation for all time inputs
+[workMinutesInput, workSecondsInput, restMinutesInput, restSecondsInput].forEach(input => {
+    input.addEventListener('input', function() {
+        if (this.value < 0) this.value = 0;
+        if (this.value > 59) this.value = 59;
+    });
+});
